@@ -1,36 +1,23 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../src/php/session_config.php';
 require_once __DIR__ . '/../../src/php/db.php';
+require_once __DIR__ . '/../../src/php/auth.php';
+require_once __DIR__ . '/../../src/php/functions.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../auth/login.php');
-    exit;
-}
+ensure_role('admin');
 
-// Count users, events, registrations
-$totalUsers = $pdo->query("SELECT COUNT(*) AS count FROM users")->fetch()['count'];
-$totalEvents = $pdo->query("SELECT COUNT(*) AS count FROM events")->fetch()['count'];
-$totalRegs = $pdo->query("SELECT COUNT(*) AS count FROM registrations")->fetch()['count'];
-
-// Top 5 most registered events
-$topEvents = $pdo->query("
-  SELECT e.title, COUNT(r.reg_id) AS registrations
-  FROM events e
-  LEFT JOIN registrations r ON e.event_id = r.event_id
-  GROUP BY e.event_id
-  ORDER BY registrations DESC
-  LIMIT 5
-")->fetchAll();
+// Event count and registrations
+$totalEvents = $pdo->query("SELECT COUNT(*) FROM events")->fetchColumn();
+$totalUsers  = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+$totalRegs   = $pdo->query("SELECT COUNT(*) FROM registrations")->fetchColumn();
 
 // Average ratings
 $avgRatings = $pdo->query("
-  SELECT e.title, AVG(f.rating) AS avg_rating
-  FROM feedback f
-  JOIN events e ON e.event_id = f.event_id
-  GROUP BY e.event_id
+  SELECT e.title, ROUND(AVG(f.rating),2) AS avg_rating
+  FROM feedback f JOIN events e ON f.event_id=e.event_id
+  GROUP BY e.title
 ")->fetchAll();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,46 +29,53 @@ $avgRatings = $pdo->query("
 </head>
 
 <body>
-    <h2>🧭 Admin Dashboard</h2>
-    <p><a href="../index.php">🏠 Back to Home</a></p>
+    <div class="card fade-in">
+        <h2>📊 Admin Dashboard</h2>
+        <p><a href="../index.php" class="btn">🏠 Home</a></p>
 
-    <h3>📊 Overview</h3>
-    <ul>
-        <li><b>Total Users:</b> <?= $totalUsers ?></li>
-        <li><b>Total Events:</b> <?= $totalEvents ?></li>
-        <li><b>Total Registrations:</b> <?= $totalRegs ?></li>
-    </ul>
-
-    <h3>🏆 Top 5 Events by Registration</h3>
-    <table border="1" cellpadding="5">
-        <tr>
-            <th>Event</th>
-            <th>Registrations</th>
-        </tr>
-        <?php foreach ($topEvents as $ev): ?>
+        <table>
             <tr>
-                <td><?= htmlspecialchars($ev['title']) ?></td>
-                <td><?= $ev['registrations'] ?></td>
+                <th>Metric</th>
+                <th>Count</th>
             </tr>
-        <?php endforeach; ?>
-    </table>
+            <tr>
+                <td>Total Events</td>
+                <td><?= e($totalEvents) ?></td>
+            </tr>
+            <tr>
+                <td>Total Users</td>
+                <td><?= e($totalUsers) ?></td>
+            </tr>
+            <tr>
+                <td>Total Registrations</td>
+                <td><?= e($totalRegs) ?></td>
+            </tr>
+        </table>
 
-    <h3>⭐ Average Ratings per Event</h3>
-    <canvas id="ratingsChart" width="600" height="300"></canvas>
+        <h3>⭐ Average Ratings by Event</h3>
+        <canvas id="ratingChart" width="600" height="300"></canvas>
+    </div>
 
     <script>
-        const ctx = document.getElementById('ratingsChart');
-        const chart = new Chart(ctx, {
+        const ctx = document.getElementById('ratingChart');
+        new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: <?= json_encode(array_column($avgRatings, 'title')) ?>,
                 datasets: [{
                     label: 'Average Rating',
                     data: <?= json_encode(array_column($avgRatings, 'avg_rating')) ?>,
+                    backgroundColor: 'rgba(0,91,187,0.7)',
+                    borderColor: '#003f88',
                     borderWidth: 1
                 }]
             },
             options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,

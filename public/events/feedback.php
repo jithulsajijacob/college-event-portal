@@ -1,42 +1,31 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../src/php/session_config.php';
 require_once __DIR__ . '/../../src/php/db.php';
+require_once __DIR__ . '/../../src/php/auth.php';
+require_once __DIR__ . '/../../src/php/functions.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header('Location: ../auth/login.php');
-    exit;
-}
+ensure_role('student');
 
 $message = '';
-
-// Fetch events this student registered for
-$stmt = $pdo->prepare("SELECT e.event_id, e.title
-                       FROM events e
-                       JOIN registrations r ON e.event_id = r.event_id
-                       WHERE r.user_id = ?");
-$stmt->execute([$_SESSION['user_id']]);
-$events = $stmt->fetchAll();
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $event_id = intval($_POST['event_id']);
-    $rating = intval($_POST['rating']);
+    $event_id = (int)$_POST['event_id'];
+    $rating   = (int)$_POST['rating'];
     $comments = trim($_POST['comments']);
 
-    if ($rating < 1 || $rating > 5) {
-        $message = "⚠️ Please select a valid rating (1–5).";
+    if ($event_id && $rating) {
+        $stmt = $pdo->prepare(
+            "INSERT INTO feedback (user_id, event_id, rating, comments)
+             VALUES (?, ?, ?, ?)"
+        );
+        $stmt->execute([$_SESSION['user_id'], $event_id, $rating, $comments]);
+        $message = "✅ Feedback submitted successfully!";
     } else {
-        $stmt = $pdo->prepare("INSERT INTO feedback (event_id, user_id, rating, comments)
-                           VALUES (?, ?, ?, ?)");
-        try {
-            $stmt->execute([$event_id, $_SESSION['user_id'], $rating, $comments]);
-            $message = "✅ Feedback submitted successfully!";
-        } catch (PDOException $e) {
-            $message = "⚠️ You have already submitted feedback for this event.";
-        }
+        $message = "⚠️ Please select an event and rating.";
     }
 }
-?>
 
+$events = $pdo->query("SELECT event_id, title FROM events ORDER BY event_date DESC")->fetchAll();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,30 +36,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <h2>🗒️ Submit Event Feedback</h2>
-    <p><a href="../index.php">🏠 Back to Home</a></p>
+    <div class="card fade-in">
+        <h2>🗒️ Submit Event Feedback</h2>
+        <p><a href="../index.php" class="btn">🏠 Home</a></p>
+        <?php if ($message): ?><p><?= e($message) ?></p><?php endif; ?>
 
-    <?php if ($message): ?>
-        <p style="color:green"><?= htmlspecialchars($message) ?></p>
-    <?php endif; ?>
+        <form method="POST">
+            <label>Select Event</label>
+            <select name="event_id" required>
+                <option value="">-- Choose an Event --</option>
+                <?php foreach ($events as $e): ?>
+                    <option value="<?= $e['event_id'] ?>"><?= e($e['title']) ?></option>
+                <?php endforeach; ?>
+            </select>
 
-    <form method="POST">
-        <label>Choose Event:</label><br>
-        <select name="event_id" required>
-            <option value="">-- Select Event --</option>
-            <?php foreach ($events as $event): ?>
-                <option value="<?= $event['event_id'] ?>"><?= htmlspecialchars($event['title']) ?></option>
-            <?php endforeach; ?>
-        </select><br><br>
+            <label>Rating (1–5)</label>
+            <select name="rating" required>
+                <option value="">-- Select Rating --</option>
+                <?php for ($i = 1; $i <= 5; $i++): ?>
+                    <option value="<?= $i ?>"><?= $i ?></option>
+                <?php endfor; ?>
+            </select>
 
-        <label>Rating (1–5):</label><br>
-        <input type="number" name="rating" min="1" max="5" required><br><br>
+            <label>Comments</label>
+            <textarea name="comments" rows="4"></textarea>
 
-        <label>Comments:</label><br>
-        <textarea name="comments" rows="4" cols="40"></textarea><br><br>
-
-        <button type="submit">Submit Feedback</button>
-    </form>
+            <button type="submit">Submit Feedback</button>
+        </form>
+    </div>
 </body>
 
 </html>

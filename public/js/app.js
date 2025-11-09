@@ -1,6 +1,4 @@
-// --------------------
-// Registration Form Validation
-// --------------------
+// ---------- Registration Form Validation ----------
 function validateRegisterForm() {
   const form = document.getElementById('registerForm');
   const name = form.name.value.trim();
@@ -9,35 +7,27 @@ function validateRegisterForm() {
   const confirm = form.confirm_password.value;
 
   if (!name || !email || !password || !confirm) {
-    alert("All fields are required!");
+    alert("⚠️ All fields are required!");
     return false;
   }
   if (password.length < 6) {
-    alert("Password must be at least 6 characters.");
+    alert("⚠️ Password must be at least 6 characters.");
     return false;
   }
   if (password !== confirm) {
-    alert("Passwords do not match!");
+    alert("⚠️ Passwords do not match!");
     return false;
   }
   return true;
 }
 
-// --------------------
-// Test message to confirm JS loaded
-// --------------------
-console.log("JavaScript loaded successfully!");
+console.log("✅ JavaScript loaded successfully!");
 
-// --------------------
-// AJAX: Event Registration Button Handler
-// --------------------
+// ---------- AJAX Event Registration ----------
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.btn-register').forEach(btn => {
     btn.addEventListener('click', function() {
       const eventId = this.dataset.eventId;
-
-      // Debug log to verify event click
-      console.log("Register button clicked for Event ID:", eventId);
 
       fetch('register_ajax.php', {
         method: 'POST',
@@ -52,10 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
           alert("⚠️ " + data.error);
         }
       })
-      .catch((err) => {
-        console.error(err);
-        alert("❌ Network error");
-      });
+      .catch(() => alert("❌ Network error"));
     });
   });
 });

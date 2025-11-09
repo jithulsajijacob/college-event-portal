@@ -1,6 +1,6 @@
 <?php
-session_name('college_portal');
-session_start();
+require_once __DIR__ . '/../../src/php/session_config.php';
+
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../src/php/db.php';
 
