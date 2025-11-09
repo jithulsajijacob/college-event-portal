@@ -19,6 +19,12 @@ session_start();
     <?php else: ?>
         <p>Welcome, <?= htmlspecialchars($_SESSION['name']) ?> (<?= htmlspecialchars($_SESSION['role']) ?>)</p>
         <p><a href="auth/logout.php">Logout</a></p>
+
+        <?php if ($_SESSION['role'] === 'organizer'): ?>
+            <p><a href="events/create_event.php">➕ Create New Event</a></p>
+        <?php endif; ?>
+
+        <p><a href="events/view_event.php">📅 View Upcoming Events</a></p>
     <?php endif; ?>
 </body>
 

@@ -1,3 +1,6 @@
+// --------------------
+// Registration Form Validation
+// --------------------
 function validateRegisterForm() {
   const form = document.getElementById('registerForm');
   const name = form.name.value.trim();
@@ -20,5 +23,39 @@ function validateRegisterForm() {
   return true;
 }
 
+// --------------------
+// Test message to confirm JS loaded
+// --------------------
 console.log("JavaScript loaded successfully!");
-<script src="js/app.js"></script>
+
+// --------------------
+// AJAX: Event Registration Button Handler
+// --------------------
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.btn-register').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const eventId = this.dataset.eventId;
+
+      // Debug log to verify event click
+      console.log("Register button clicked for Event ID:", eventId);
+
+      fetch('register_ajax.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id: eventId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("✅ " + data.message);
+        } else {
+          alert("⚠️ " + data.error);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("❌ Network error");
+      });
+    });
+  });
+});
