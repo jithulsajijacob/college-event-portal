@@ -17,3 +17,5 @@ HTML5 · CSS3 · JavaScript (jQuery) · PHP (PDO) · MySQL · AJAX · Java (JDBC
 ## Setup Instructions
 
 Detailed setup steps will be added as the project develops.
+
+## JSJ
