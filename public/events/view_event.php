@@ -1,8 +1,8 @@
 <?php
+session_name('college_portal');
 session_start();
 require_once __DIR__ . '/../../src/php/db.php';
 
-// Fetch all upcoming events
 $stmt = $pdo->query("SELECT e.*, u.name AS organizer_name
                      FROM events e
                      JOIN users u ON e.organizer_id = u.user_id

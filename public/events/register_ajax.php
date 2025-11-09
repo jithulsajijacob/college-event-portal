@@ -1,4 +1,5 @@
 <?php
+session_name('college_portal');
 session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../src/php/db.php';
@@ -21,9 +22,9 @@ try {
     $stmt->execute([$_SESSION['user_id'], $event_id]);
     echo json_encode(['success' => true, 'message' => 'Registered successfully']);
 } catch (PDOException $e) {
-    if ($e->getCode() === '23000') { // duplicate
+    if ($e->getCode() === '23000') {
         echo json_encode(['success' => false, 'error' => 'You are already registered for this event']);
     } else {
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }

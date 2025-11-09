@@ -1,4 +1,5 @@
 <?php
+session_name('college_portal');
 session_start();
 require_once __DIR__ . '/../../src/php/db.php';
 
@@ -17,7 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['name'] = $user['name'];
         $_SESSION['role'] = $user['role'];
-
         header('Location: ../index.php');
         exit;
     } else {

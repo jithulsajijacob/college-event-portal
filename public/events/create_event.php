@@ -1,8 +1,8 @@
 <?php
+session_name('college_portal');
 session_start();
 require_once __DIR__ . '/../../src/php/db.php';
 
-// Only organizers can access
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'organizer') {
     header('Location: ../auth/login.php');
     exit;
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p><a href="../index.php">🏠 Back to Home</a></p>
 
     <?php if ($message): ?>
-        <p style="color: green;"><?= htmlspecialchars($message) ?></p>
+        <p style="color:green;"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
 
     <form method="POST">

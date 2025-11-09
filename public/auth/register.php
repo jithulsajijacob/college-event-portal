@@ -1,4 +1,5 @@
 <?php
+session_name('college_portal');
 session_start();
 require_once __DIR__ . '/../../src/php/db.php';
 
@@ -9,9 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
     $password = $_POST['password'];
     $confirm = $_POST['confirm_password'];
-    $role = in_array($_POST['role'], ['student', 'organizer']) ? $_POST['role'] : 'student';
+    $role = in_array($_POST['role'], ['student', 'organizer', 'admin']) ? $_POST['role'] : 'student';
 
-    // Server-side validation
     if (!$name || !$email || strlen($password) < 6 || $password !== $confirm) {
         $message = "⚠️ Please fill all fields correctly.";
     } else {
@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <select name="role" required>
             <option value="student">Student</option>
             <option value="organizer">Organizer</option>
+            <option value="admin">Admin</option>
         </select><br><br>
 
         <button type="submit">Register</button>

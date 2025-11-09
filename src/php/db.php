@@ -1,6 +1,5 @@
 <?php
-// Database connection using PDO
-$cfg = parse_ini_file(__DIR__ . '/../../.env'); // reads DB creds
+$cfg = parse_ini_file(__DIR__ . '/../../.env');
 $host = $cfg['DB_HOST'] ?? '127.0.0.1';
 $db   = $cfg['DB_NAME'] ?? 'college_events';
 $user = $cfg['DB_USER'] ?? 'root';
@@ -15,7 +14,6 @@ $options = [
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
-    echo "✅ Database connection successful!";
 } catch (PDOException $e) {
-    exit("❌ Connection failed: " . $e->getMessage());
+    exit(json_encode(['success' => false, 'error' => 'Database connection failed: ' . $e->getMessage()]));
 }
